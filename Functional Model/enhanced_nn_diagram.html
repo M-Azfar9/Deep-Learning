@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Network Architecture</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      text-align: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 15px;
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+
+    .diagram {
+      position: relative;
+      padding: 60px 40px;
+      min-height: 800px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border-radius: 12px;
+    }
+
+    .node {
+      position: absolute;
+      background: white;
+      border: 3px solid;
+      border-radius: 12px;
+      padding: 20px 25px;
+      min-width: 200px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .node:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .node-title {
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+
+    .node-detail {
+      font-size: 13px;
+      color: #64748b;
+      margin: 3px 0;
+    }
+
+    .node-shape {
+      font-weight: 600;
+      color: #475569;
+    }
+
+    /* Input nodes - Blue */
+    .input-node {
+      border-color: #3b82f6;
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    }
+
+    /* Dense nodes - Branch A (Green) */
+    .dense-a {
+      border-color: #10b981;
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    }
+
+    /* Dense nodes - Branch B (Purple) */
+    .dense-b {
+      border-color: #8b5cf6;
+      background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+    }
+
+    /* Concatenate node - Orange */
+    .concat-node {
+      border-color: #f97316;
+      background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    }
+
+    /* Output nodes - Pink */
+    .output-node {
+      border-color: #ec4899;
+      background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+    }
+
+    /* Positioning */
+    .inputA { top: 40px; left: 100px; }
+    .inputB { top: 40px; right: 100px; }
+    
+    .dense-x { top: 180px; left: 100px; }
+    .dense-y { top: 180px; right: 100px; }
+    
+    .dense-x1 { top: 320px; left: 100px; }
+    .dense-y1 { top: 320px; right: 100px; }
+    
+    .dense-y2 { top: 460px; right: 100px; }
+    
+    .concat { top: 520px; left: 50%; transform: translateX(-50%); min-width: 280px; }
+    
+    .dense-z { top: 660px; left: 50%; transform: translateX(-50%); }
+    .dense-z1 { top: 800px; left: 50%; transform: translateX(-50%); }
+
+    /* Arrows */
+    .arrow {
+      position: absolute;
+      z-index: 0;
+    }
+
+    .arrow-line {
+      position: absolute;
+      background: #475569;
+      border-radius: 2px;
+    }
+
+    .arrow-head {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+
+    .arrow-down .arrow-head {
+      border-width: 15px 10px 0 10px;
+      border-color: #475569 transparent transparent transparent;
+    }
+
+    .arrow-diagonal .arrow-head {
+      border-width: 10px 0 10px 15px;
+      border-color: transparent transparent transparent #475569;
+    }
+
+    .arrow-diagonal-right .arrow-head {
+      border-width: 10px 15px 10px 0;
+      border-color: transparent #475569 transparent transparent;
+    }
+
+    /* Arrow paths */
+    .arr1 .arrow-line { left: 160px; top: 95px; width: 4px; height: 20px; }
+    .arr1 .arrow-head { left: 152px; top: 105px; }
+
+    .arr2 .arrow-line { left: 160px; top: 200px; width: 4px; height: 20px; }
+    .arr2 .arrow-head { left: 152px; top: 105px; }
+
+    .arr3 .arrow-line { left: 200px; top: 260px; width: 4px; height: 60px; }
+    .arr3 .arrow-head { left: 192px; top: 320px; }
+
+    .arr4 .arrow-line { right: 200px; top: 260px; width: 4px; height: 60px; }
+    .arr4 .arrow-head { right: 192px; top: 320px; }
+
+    .arr5 .arrow-line { right: 200px; top: 400px; width: 4px; height: 60px; }
+    .arr5 .arrow-head { right: 192px; top: 460px; }
+
+    .arr6 .arrow-line { left: 200px; top: 395px; width: 280px; height: 4px; }
+    .arr6 .arrow-head { left: 480px; top: 387px; }
+
+    .arr7 .arrow-line { right: 200px; top: 535px; width: 280px; height: 4px; }
+    .arr7 .arrow-head { right: 480px; top: 527px; }
+
+    .arr8 .arrow-line { left: 50%; transform: translateX(-50%); top: 605px; width: 4px; height: 55px; }
+    .arr8 .arrow-head { left: 50%; transform: translateX(-50%); top: 660px; }
+
+    .arr9 .arrow-line { left: 50%; transform: translateX(-50%); top: 745px; width: 4px; height: 55px; }
+    .arr9 .arrow-head { left: 50%; transform: translateX(-50%); top: 800px; }
+
+    /* Labels */
+    .branch-label {
+      position: absolute;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .branch-a {
+      top: 10px;
+      left: 120px;
+      background: #d1fae5;
+      color: #065f46;
+      border: 2px solid #10b981;
+    }
+
+    .branch-b {
+      top: 10px;
+      right: 120px;
+      background: #ede9fe;
+      color: #5b21b6;
+      border: 2px solid #8b5cf6;
+    }
+
+    .info-box {
+      margin-top: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      border-radius: 10px;
+      border-left: 4px solid #667eea;
+    }
+
+    .info-title {
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .info-text {
+      color: #475569;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      margin-top: 15px;
+      overflow-x: auto;
+    }
+
+    .keyword { color: #c792ea; }
+    .function { color: #82aaff; }
+    .number { color: #f78c6c; }
+    .string { color: #c3e88d; }
+
+    @media (max-width: 1200px) {
+      .diagram {
+        transform: scale(0.85);
+        transform-origin: top center;
+        min-height: 700px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .diagram {
+        transform: scale(0.65);
+        transform-origin: top center;
+        min-height: 550px;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Multi-Input Neural Network Architecture</h1>
+    <p class="subtitle">Keras Functional API Model with Two Input Branches</p>
+    
+    <div class="diagram">
+      <!-- Branch Labels -->
+      <div class="branch-label branch-a">Branch A</div>
+      <div class="branch-label branch-b">Branch B</div>
+
+      <!-- Input Nodes -->
+      <div class="node input-node inputA">
+        <div class="node-title">inputA: Input</div>
+        <div class="node-detail">Shape: <span class="node-shape">(32,)</span></div>
+        <div class="node-detail">Type: Input Layer</div>
+      </div>
+
+      <div class="node input-node inputB">
+        <div class="node-title">inputB: Input</div>
+        <div class="node-detail">Shape: <span class="node-shape">(128,)</span></div>
+        <div class="node-detail">Type: Input Layer</div>
+      </div>
+
+      <!-- Branch A - Dense Layers -->
+      <div class="node dense-a dense-x">
+        <div class="node-title">x: Dense(8)</div>
+        <div class="node-detail">Units: <span class="node-shape">8</span></div>
+        <div class="node-detail">Activation: relu</div>
+        <div class="node-detail">Output: (None, 8)</div>
+      </div>
+
+      <div class="node dense-a dense-x1">
+        <div class="node-title">x1: Dense(4)</div>
+        <div class="node-detail">Units: <span class="node-shape">4</span></div>
+        <div class="node-detail">Activation: relu</div>
+        <div class="node-detail">Output: (None, 4)</div>
+      </div>
+
+      <!-- Branch B - Dense Layers -->
+      <div class="node dense-b dense-y">
+        <div class="node-title">y: Dense(64)</div>
+        <div class="node-detail">Units: <span class="node-shape">64</span></div>
+        <div class="node-detail">Activation: relu</div>
+        <div class="node-detail">Output: (None, 64)</div>
+      </div>
+
+      <div class="node dense-b dense-y1">
+        <div class="node-title">y1: Dense(32)</div>
+        <div class="node-detail">Units: <span class="node-shape">32</span></div>
+        <div class="node-detail">Activation: relu</div>
+        <div class="node-detail">Output: (None, 32)</div>
+      </div>
+
+      <div class="node dense-b dense-y2">
+        <div class="node-title">y2: Dense(4)</div>
+        <div class="node-detail">Units: <span class="node-shape">4</span></div>
+        <div class="node-detail">Activation: relu</div>
+        <div class="node-detail">Output: (None, 4)</div>
+      </div>
+
+      <!-- Concatenate Layer -->
+      <div class="node concat-node concat">
+        <div class="node-title">combined: Concatenate</div>
+        <div class="node-detail">Inputs: <span class="node-shape">[x1, y2]</span></div>
+        <div class="node-detail">Output: (None, 8)</div>
+      </div>
+
+      <!-- Output Layers -->
+      <div class="node output-node dense-z">
+        <div class="node-title">z: Dense(2)</div>
+        <div class="node-detail">Units: <span class="node-shape">2</span></div>
+        <div class="node-detail">Activation: relu</div>
+        <div class="node-detail">Output: (None, 2)</div>
+      </div>
+
+      <div class="node output-node dense-z1">
+        <div class="node-title">z1: Dense(1)</div>
+        <div class="node-detail">Units: <span class="node-shape">1</span></div>
+        <div class="node-detail">Activation: linear</div>
+        <div class="node-detail">Output: (None, 1)</div>
+      </div>
+
+      <!-- Arrows -->
+      <div class="arrow arr1 arrow-down">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr2 arrow-down">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr3 arrow-down">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr4 arrow-down">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr5 arrow-down">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr6 arrow-diagonal">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr7 arrow-diagonal-right">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr8 arrow-down">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+      <div class="arrow arr9 arrow-down">
+        <div class="arrow-line"></div>
+        <div class="arrow-head"></div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-title">Architecture Overview</div>
+      <div class="info-text">
+        This neural network uses a <strong>dual-branch architecture</strong> with two separate input streams that process different feature dimensions:
+        <br><br>
+        <strong>Branch A (Green):</strong> Processes 32-dimensional input through 2 dense layers (8→4 units)<br>
+        <strong>Branch B (Purple):</strong> Processes 128-dimensional input through 3 dense layers (64→32→4 units)<br>
+        <strong>Merge Point:</strong> Both branches converge at a concatenate layer combining 8 features total<br>
+        <strong>Output Path:</strong> Final processing through 2 dense layers (2→1 units) with linear output for regression
+      </div>
+      
+      <div class="code-block">
+<span class="keyword">inputA</span>  = <span class="function">Input</span>(shape=(<span class="number">32</span>, ))
+<span class="keyword">inputB</span>  = <span class="function">Input</span>(shape=(<span class="number">128</span>, ))
+<span class="keyword">x</span> = <span class="function">Dense</span>(<span class="number">8</span>, activation=<span class="string">'relu'</span>)(inputA)
+<span class="keyword">x1</span> = <span class="function">Dense</span>(<span class="number">4</span>, activation=<span class="string">'relu'</span>)(x)
+<span class="keyword">y</span> = <span class="function">Dense</span>(<span class="number">64</span>, activation=<span class="string">'relu'</span>)(inputB)
+<span class="keyword">y1</span> = <span class="function">Dense</span>(<span class="number">32</span>, activation=<span class="string">'relu'</span>)(y)
+<span class="keyword">y2</span> = <span class="function">Dense</span>(<span class="number">4</span>, activation=<span class="string">'relu'</span>)(y1)
+<span class="keyword">combined</span> = <span class="function">concatenate</span>([x1, y2])
+<span class="keyword">z</span> = <span class="function">Dense</span>(<span class="number">2</span>, activation=<span class="string">'relu'</span>)(combined)
+<span class="keyword">z1</span> = <span class="function">Dense</span>(<span class="number">1</span>, activation=<span class="string">'linear'</span>)(z)
+      </div>
+    </div>
+  </div>
+</body>
+</html>
